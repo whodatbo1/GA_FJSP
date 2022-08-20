@@ -1,17 +1,19 @@
 use std::collections::HashMap;
-use serde_json;
-use std::fs::File;
+use crate::encode_decode::decode_simple;
+use crate::generate_instances::load_change_overs;
+use crate::instance::InstanceConstants;
+use crate::schedule::Schedule;
+
 pub mod instance;
 pub mod utils;
 mod generate_instances;
 mod encode_decode;
 mod schedule;
+mod population;
 
 fn main() {
-    let instance_0 = File::open("./json_instances/instance_0.json").expect("");
-    let ins: instance::JsonInstance = serde_json::from_reader(instance_0).expect("");
     let nr_instances = 20;
-    let destination = String::from("str_instance_");
+    // let destination = String::from("str_instance_");
     let products: Vec<String> = Vec::from([
         String::from("enzyme0"),
         String::from("enzyme1"),
@@ -21,7 +23,7 @@ fn main() {
         String::from("enzyme5")]
     );
 
-    let nr_products: i32 = products.len() as i32;
+    // let nr_products: i32 = products.len() as i32;
 
     let recipes: [Vec<i32>; 6] = [
         Vec::from([0, 1, 2]),
@@ -32,12 +34,12 @@ fn main() {
         Vec::from([1, 2])
     ];
 
-    const nr_machines: i32 = 9;
+    const NR_MACHINES: i32 = 9;
 
-    let mut unitMachines: HashMap<i32, Vec<i32>> = HashMap::new();
-    unitMachines.insert(0, Vec::from([0, 1, 2]));
-    unitMachines.insert(1, Vec::from([3, 4, 5, 6]));
-    unitMachines.insert(2, Vec::from([7, 8]));
+    let mut unit_machines: HashMap<i32, Vec<i32>> = HashMap::new();
+    unit_machines.insert(0, Vec::from([0, 1, 2]));
+    unit_machines.insert(1, Vec::from([3, 4, 5, 6]));
+    unit_machines.insert(2, Vec::from([7, 8]));
 
     let processing_times: [Vec<i32>; 3] = [
         Vec::from([8, 3, 0, 4, 5, 0]),
@@ -45,6 +47,20 @@ fn main() {
         Vec::from([4, 0, 3, 6, 7, 3])
     ];
 
-    let instances = generate_instances::generateAllInstances(nr_instances, &products, &recipes, nr_machines, &unitMachines, &processing_times);
-    schedule::generateRandomScheduleEncoding(&instances.get(&0).expect(""));
+    let change_overs = load_change_overs();
+
+    let instance_constants: InstanceConstants = InstanceConstants::new(NR_MACHINES, products, unit_machines, processing_times, recipes, change_overs);
+
+    let instances = generate_instances::generate_all_instances(&instance_constants, nr_instances);
+
+    for _ in 0..10 {
+        let (v1, v2) = schedule::generate_random_schedule_encoding(&instances.get(&0).expect(""));
+
+        let s: Schedule = Schedule::new(&instances[&0], v1, v2);
+
+        // let decoded_schedule = decode_simple(&s);
+        println!("{}", s.calculate_makespan());
+    }
+
+    println!("Done");
 }

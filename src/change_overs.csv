@@ -1,4 +1,4 @@
-index,machine,product1,product2,changeOver
+index,machine,product1,product2,change_over
 0,0,enzyme0,enzyme0,0
 1,0,enzyme0,enzyme1,3
 2,0,enzyme0,enzyme2,1
