@@ -2,7 +2,8 @@ use std::collections::HashMap;
 use crate::encode_decode::decode_simple;
 use crate::generate_instances::load_change_overs;
 use crate::genetic_operations::cross_over_schedules;
-use crate::instance::InstanceConstants;
+use crate::instance::{Instance, InstanceConstants};
+use crate::population::Population;
 use crate::schedule::Schedule;
 
 pub mod instance;
@@ -69,6 +70,8 @@ fn main() {
     println!("Done");
 }
 
-fn run_ga() {
+fn run_ga(instance: &Instance, population_size: i32, generation_count: i32, mutation_coeffictient: f64) {
+    let population = Population::generate_starting_population(instance, population_size);
+
 
 }

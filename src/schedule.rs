@@ -20,6 +20,11 @@ impl Schedule<'_> {
     pub fn calculate_makespan(&self) -> i32{
         decode_simple(&self).calculate_makespan()
     }
+
+    pub fn generate_random_schedule<'a>(instance: &'a Instance) -> Schedule<'a> {
+        let (v1, v2) = generate_random_schedule_encoding(instance);
+        Schedule::new(instance, v1, v2)
+    }
 }
 
 pub fn generate_random_schedule_encoding(instance: &Instance) -> (Vec<i32>, Vec<i32>)  {
