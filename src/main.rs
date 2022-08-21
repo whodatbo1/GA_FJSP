@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 use crate::encode_decode::decode_simple;
 use crate::generate_instances::load_change_overs;
+use crate::genetic_operations::cross_over_schedules;
 use crate::instance::InstanceConstants;
 use crate::schedule::Schedule;
 
@@ -10,6 +11,7 @@ mod generate_instances;
 mod encode_decode;
 mod schedule;
 mod population;
+mod genetic_operations;
 
 fn main() {
     let nr_instances = 20;
@@ -53,14 +55,20 @@ fn main() {
 
     let instances = generate_instances::generate_all_instances(&instance_constants, nr_instances);
 
-    for _ in 0..10 {
-        let (v1, v2) = schedule::generate_random_schedule_encoding(&instances.get(&0).expect(""));
+    for _ in 0..100000 {
+        let (v10, v20) = schedule::generate_random_schedule_encoding(&instances.get(&0).expect(""));
+        let (v11, v21) = schedule::generate_random_schedule_encoding(&instances.get(&0).expect(""));
 
-        let s: Schedule = Schedule::new(&instances[&0], v1, v2);
-
+        let s: Schedule = Schedule::new(&instances[&0], v10, v20);
+        let s1: Schedule = Schedule::new(&instances[&0], v11, v21);
         // let decoded_schedule = decode_simple(&s);
-        println!("{}", s.calculate_makespan());
+        let x = cross_over_schedules(&s, &s1);
+        // println!("{}", s.calculate_makespan());
     }
 
     println!("Done");
+}
+
+fn run_ga() {
+
 }

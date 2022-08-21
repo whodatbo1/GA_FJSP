@@ -94,14 +94,14 @@ pub fn encode_schedule<'a>(instance: &'static Instance, schedule: &mut DecodedSc
 }
 
 pub fn decode_simple(schedule: &Schedule) -> DecodedSchedule {
-    let mut curr_machine_times = create_zeros_vec(schedule.instance.instance_constants.nr_machines);
-    let mut curr_job_times = create_zeros_vec(schedule.instance.nr_jobs);
+    let mut curr_machine_times = create_vec_with_length_and_value(schedule.instance.instance_constants.nr_machines, 0);
+    let mut curr_job_times = create_vec_with_length_and_value(schedule.instance.nr_jobs, 0);
 
     let mut previous_enzyme_per_machine: HashMap<i32, String> = HashMap::new();
 
     let mut results: Vec<DecodedOperation> = Vec::new();
 
-    let mut op_index = create_zeros_vec(schedule.instance.nr_jobs);
+    let mut op_index = create_vec_with_length_and_value(schedule.instance.nr_jobs, 0);
 
     for job in schedule.v2.clone().into_iter() {
         let operation: i32 = schedule.instance.operations[&job][op_index[job as usize] as usize];
@@ -143,8 +143,8 @@ pub fn decode_simple(schedule: &Schedule) -> DecodedSchedule {
     return DecodedSchedule::new(results);
 }
 
-fn create_zeros_vec(length: i32) -> Vec<i32> {
+pub fn create_vec_with_length_and_value(length: i32, value: i32) -> Vec<i32> {
     let mut zeros = Vec::with_capacity(length as usize);
-    zeros.resize(length as usize, 0);
+    zeros.resize(length as usize, value);
     zeros
 }
