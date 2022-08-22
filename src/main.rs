@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use rand::Rng;
 use crate::encode_decode::decode_simple;
 use crate::generate_instances::load_change_overs;
 use crate::genetic_operations::cross_over_schedules;
@@ -71,7 +72,22 @@ fn main() {
 }
 
 fn run_ga(instance: &Instance, population_size: i32, generation_count: i32, mutation_coeffictient: f64) {
-    let population = Population::generate_starting_population(instance, population_size);
+    println!("Beginning pipeline...");
+    let mut rng = rand::thread_rng();
 
+    println!("Generating starting population...");
+    let mut population = Population::generate_starting_population(instance, population_size);
 
+    for generation in 0..generation_count {
+        println!("Generation {}...", generation);
+
+        population.calculate_objective_values_and_sort();
+
+        let distribution = population.generate_probability_distribution();
+
+        for child in 0..population_size {
+            // TODO
+            // rng.sample(distribution);
+        }
+    }
 }

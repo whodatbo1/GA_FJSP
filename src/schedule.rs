@@ -1,3 +1,6 @@
+use std::cmp::Ordering;
+use std::cmp::Ordering::{Equal, Greater, Less};
+use std::collections::HashMap;
 use crate::instance::Instance;
 use rand::seq::SliceRandom;
 use crate::decode_simple;
@@ -5,7 +8,8 @@ use crate::decode_simple;
 pub struct Schedule<'a> {
     pub instance: &'a Instance<'a>,
     pub v1: Vec<i32>,
-    pub v2: Vec<i32>
+    pub v2: Vec<i32>,
+    pub objective_values: HashMap<String, i32>
 }
 
 impl Schedule<'_> {
@@ -13,17 +17,32 @@ impl Schedule<'_> {
         Schedule {
             instance,
             v1,
-            v2
+            v2,
+            objective_values: HashMap::new()
         }
     }
 
-    pub fn calculate_makespan(&self) -> i32{
-        decode_simple(&self).calculate_makespan()
+    pub fn calculate_makespan(&mut self) -> i32 {
+        let makespan = decode_simple(&self).calculate_makespan();
+        self.objective_values.insert(String::from("makespan"), makespan);
+        makespan
     }
 
     pub fn generate_random_schedule<'a>(instance: &'a Instance) -> Schedule<'a> {
         let (v1, v2) = generate_random_schedule_encoding(instance);
         Schedule::new(instance, v1, v2)
+    }
+
+    pub fn order_by_makespan(&self, other: &Schedule) -> Ordering{
+        let self_makespan = self.objective_values.get("makespan").expect("Makespan of Schedule self missing.");
+        let other_makespan = other.objective_values.get("makespan").expect("Makespan of Schedule other missing.");
+
+        if self_makespan < other_makespan {
+            return Greater;
+        } else if self_makespan > other_makespan {
+            return Less;
+        }
+        return Equal;
     }
 }
 
