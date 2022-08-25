@@ -67,7 +67,7 @@ fn main() {
         let x = cross_over_schedules(&s, &s1);
         // println!("{}", s.calculate_makespan());
     }
-
+    run_ga(&instances[&0], 100, 100, 0.1);
     println!("Done");
 }
 
@@ -83,11 +83,23 @@ fn run_ga(instance: &Instance, population_size: i32, generation_count: i32, muta
 
         population.calculate_objective_values_and_sort();
 
-        let distribution = population.generate_probability_distribution();
+        let distribution = &population.generate_probability_distribution();
+        let cumulative_distribution = utils::construct_cdf(distribution);
 
         for child in 0..population_size {
-            // TODO
-            // rng.sample(distribution);
+            let parent_male_index = utils::get_rand_element_from_cumulative_probability_distribution(&cumulative_distribution);
+            let parent_female_index = utils::get_rand_element_from_cumulative_probability_distribution(&cumulative_distribution);
+
+            let parent_male = &population.members[parent_male_index as usize];
+            let parent_female = &population.members[parent_female_index as usize];
+
+            let child = genetic_operations::cross_over_schedules(parent_male, parent_female);
+            population.members.push(child);
         }
+
+        population.calculate_objective_values_and_sort();
+        population.members.truncate(population_size as usize);
+
+        println!("Min makespan: {}", population.members[0].objective_values.get("makespan").expect(""))
     }
 }

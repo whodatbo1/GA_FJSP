@@ -26,7 +26,7 @@ pub fn mutate_schedule(schedule: &mut Schedule, mutation_coefficient: f64) {
     }
 }
 
-pub fn cross_over_schedules(male_schedule: &Schedule, female_schedule: &Schedule) {
+pub fn cross_over_schedules<'a>(male_schedule: &'a Schedule, female_schedule: &'a Schedule) -> Schedule<'a> {
 
     let binary_job_vector_for_male = generate_bool_vector(male_schedule.instance.nr_jobs);
     let binary_machine_vector_for_male = generate_bool_vector(male_schedule.v1.len() as i32);
@@ -56,6 +56,8 @@ pub fn cross_over_schedules(male_schedule: &Schedule, female_schedule: &Schedule
             index += 1;
         }
     }
+
+    Schedule::new(male_schedule.instance, child_v1, child_v2)
 
 }
 
