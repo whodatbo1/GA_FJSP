@@ -1,21 +1,21 @@
 use rand::Rng;
 use rand::seq::SliceRandom;
 use crate::encode_decode::create_vec_with_length_and_value;
-use crate::Schedule;
+use crate::{Instance, Schedule};
 
-pub fn mutate_schedule(schedule: &mut Schedule, mutation_coefficient: f64) {
+pub fn mutate_schedule(instance: &Instance, schedule: &mut Schedule, mutation_coefficient: f64) {
     let mut rng = rand::thread_rng();
 
-    let mut op_index = create_vec_with_length_and_value(schedule.instance.nr_jobs, 0);
+    let mut op_index = create_vec_with_length_and_value(instance.nr_jobs, 0);
 
-    for i in 0..schedule.instance.job_vector.len() {
+    for i in 0..instance.job_vector.len() {
 
-        let job = schedule.instance.job_vector[i];
-        let operation = schedule.instance.operations[&job][op_index[job as usize] as usize];
+        let job = instance.job_vector[i];
+        let operation = instance.operations[&job][op_index[job as usize] as usize];
         op_index[job as usize] += 1;
 
         if rng.gen_bool(mutation_coefficient) {
-            let new_machine = schedule.instance.machine_alternatives[&(job, operation)].choose(&mut rng).expect("Couldn't generate random.");
+            let new_machine = instance.machine_alternatives[&(job, operation)].choose(&mut rng).expect("Couldn't generate random.");
             schedule.v1[i] =  *new_machine;
         }
 
@@ -26,9 +26,9 @@ pub fn mutate_schedule(schedule: &mut Schedule, mutation_coefficient: f64) {
     }
 }
 
-pub fn cross_over_schedules<'a>(male_schedule: &'a Schedule, female_schedule: &'a Schedule) -> Schedule<'a> {
+pub fn cross_over_schedules(instance: &Instance, male_schedule: &Schedule, female_schedule: &Schedule) -> Schedule {
 
-    let binary_job_vector_for_male = generate_bool_vector(male_schedule.instance.nr_jobs);
+    let binary_job_vector_for_male = generate_bool_vector(instance.nr_jobs);
     let binary_machine_vector_for_male = generate_bool_vector(male_schedule.v1.len() as i32);
 
     let mut child_v1 = create_vec_with_length_and_value(male_schedule.v1.len() as i32, -1);
@@ -57,7 +57,7 @@ pub fn cross_over_schedules<'a>(male_schedule: &'a Schedule, female_schedule: &'
         }
     }
 
-    Schedule::new(male_schedule.instance, child_v1, child_v2)
+    Schedule::new(male_schedule.instance_num, child_v1, child_v2)
 
 }
 

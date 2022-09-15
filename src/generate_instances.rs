@@ -79,7 +79,8 @@ pub fn generate_all_instances(instance_constants: &InstanceConstants,
         }
 
         let curr_instance = Instance {
-            instance_constants,
+            instance_constants: instance_constants.clone(),
+            instance_num,
             nr_jobs: jobs.len() as i32,
             orders,
             jobs,

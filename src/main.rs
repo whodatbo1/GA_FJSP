@@ -57,22 +57,25 @@ fn main() {
 
     let instances = generate_instances::generate_all_instances(&instance_constants, nr_instances);
 
-    for _ in 0..100000 {
-        let (v10, v20) = schedule::generate_random_schedule_encoding(&instances.get(&0).expect(""));
-        let (v11, v21) = schedule::generate_random_schedule_encoding(&instances.get(&0).expect(""));
-
-        let s: Schedule = Schedule::new(&instances[&0], v10, v20);
-        let s1: Schedule = Schedule::new(&instances[&0], v11, v21);
-        // let decoded_schedule = decode_simple(&s);
-        let x = cross_over_schedules(&s, &s1);
-        // println!("{}", s.calculate_makespan());
-    }
-    run_ga(&instances[&0], 100, 100, 0.1);
+    // for _ in 0..100000 {
+    //     let (v10, v20) = schedule::generate_random_schedule_encoding(&instances.get(&0).expect(""));
+    //     let (v11, v21) = schedule::generate_random_schedule_encoding(&instances.get(&0).expect(""));
+    //
+    //     let s: Schedule = Schedule::new(0, v10, v20);
+    //     let s1: Schedule = Schedule::new(0, v11, v21);
+    //     // let decoded_schedule = decode_simple(&s);
+    //     let x = cross_over_schedules(&s, &s1);
+    //     // println!("{}", s.calculate_makespan());
+    // }
+    run_ga(0, &instances, 100, 100, 0.1);
     println!("Done");
 }
 
-fn run_ga(instance: &Instance, population_size: i32, generation_count: i32, mutation_coeffictient: f64) {
+fn run_ga(instance_num: i32, instances: &HashMap<i32, Instance>, population_size: i32, generation_count: i32, mutation_coeffictient: f64) {
+    let instance = instances.get(&instance_num).expect("Instance num not found");
+
     println!("Beginning pipeline...");
+
     let mut rng = rand::thread_rng();
 
     println!("Generating starting population...");
@@ -81,9 +84,9 @@ fn run_ga(instance: &Instance, population_size: i32, generation_count: i32, muta
     for generation in 0..generation_count {
         println!("Generation {}...", generation);
 
-        population.calculate_objective_values_and_sort();
+        let a = population.calculate_objective_values_and_sort(&instance);
 
-        let distribution = &population.generate_probability_distribution();
+        let distribution = population.generate_probability_distribution();
         let cumulative_distribution = utils::construct_cdf(distribution);
 
         for child in 0..population_size {
@@ -93,13 +96,13 @@ fn run_ga(instance: &Instance, population_size: i32, generation_count: i32, muta
             let parent_male = &population.members[parent_male_index as usize];
             let parent_female = &population.members[parent_female_index as usize];
 
-            let child = genetic_operations::cross_over_schedules(parent_male, parent_female);
+            let child = genetic_operations::cross_over_schedules(&instance, parent_male, parent_female);
             population.members.push(child);
         }
 
-        population.calculate_objective_values_and_sort();
+        population.calculate_objective_values_and_sort(&instance);
         population.members.truncate(population_size as usize);
 
-        println!("Min makespan: {}", population.members[0].objective_values.get("makespan").expect(""))
+        println!("Min makespan: {}", population.get_members()[0].objective_values.get("makespan").expect(""))
     }
 }

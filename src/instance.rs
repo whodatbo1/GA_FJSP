@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 
+#[derive(Clone)]
 pub struct InstanceConstants {
     pub nr_machines: i32,
     pub products: Vec<String>,
@@ -32,8 +33,9 @@ pub struct Order {
     pub due: i32
 }
 
-pub struct Instance<'a> {
-    pub instance_constants: &'a InstanceConstants,
+pub struct Instance {
+    pub instance_constants: InstanceConstants,
+    pub instance_num: i32,
     pub nr_jobs: i32,
     pub orders: HashMap<i32, Order>,
     pub jobs: Vec<i32>,

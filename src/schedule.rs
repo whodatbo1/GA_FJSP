@@ -5,32 +5,32 @@ use crate::instance::Instance;
 use rand::seq::SliceRandom;
 use crate::decode_simple;
 
-pub struct Schedule<'a> {
-    pub instance: &'a Instance<'a>,
+pub struct Schedule {
+    pub instance_num: i32,
     pub v1: Vec<i32>,
     pub v2: Vec<i32>,
     pub objective_values: HashMap<String, i32>
 }
 
-impl Schedule<'_> {
-    pub fn new<'a>(instance: &'a Instance, v1: Vec<i32>, v2: Vec<i32>) -> Schedule<'a> {
+impl Schedule {
+    pub fn new(instance_num: i32, v1: Vec<i32>, v2: Vec<i32>) -> Schedule {
         Schedule {
-            instance,
+            instance_num,
             v1,
             v2,
             objective_values: HashMap::new()
         }
     }
 
-    pub fn calculate_makespan(&mut self) -> i32 {
-        let makespan = decode_simple(&self).calculate_makespan();
+    pub fn calculate_makespan(&mut self, instance: &Instance) -> i32 {
+        let makespan = decode_simple(&self, &instance).calculate_makespan();
         self.objective_values.insert(String::from("makespan"), makespan);
         makespan
     }
 
-    pub fn generate_random_schedule<'a>(instance: &'a Instance) -> Schedule<'a> {
+    pub fn generate_random_schedule(instance: &Instance) -> Schedule {
         let (v1, v2) = generate_random_schedule_encoding(instance);
-        Schedule::new(instance, v1, v2)
+        Schedule::new(instance.instance_num, v1, v2)
     }
 
     pub fn order_by_makespan(&self, other: &Schedule) -> Ordering{

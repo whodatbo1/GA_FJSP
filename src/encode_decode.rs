@@ -80,7 +80,7 @@ impl DecodedSchedule {
     }
 }
 
-pub fn encode_schedule<'a>(instance: &'static Instance, schedule: &mut DecodedSchedule) -> Schedule<'a> {
+pub fn encode_schedule(instance: &Instance, schedule: &mut DecodedSchedule) -> Schedule {
 
     schedule.operations.sort_by(|a, b| a.order_by_start(b));
 
@@ -90,32 +90,32 @@ pub fn encode_schedule<'a>(instance: &'static Instance, schedule: &mut DecodedSc
 
     let v1 = schedule.operations.clone().into_iter().map(|dec_op| dec_op.machine).collect();
 
-    return Schedule::new(instance, v1, v2);
+    return Schedule::new(instance.instance_num, v1, v2);
 }
 
-pub fn decode_simple(schedule: &Schedule) -> DecodedSchedule {
-    let mut curr_machine_times = create_vec_with_length_and_value(schedule.instance.instance_constants.nr_machines, 0);
-    let mut curr_job_times = create_vec_with_length_and_value(schedule.instance.nr_jobs, 0);
+pub fn decode_simple(schedule: &Schedule, instance: &Instance) -> DecodedSchedule {
+    let mut curr_machine_times = create_vec_with_length_and_value(instance.instance_constants.nr_machines, 0);
+    let mut curr_job_times = create_vec_with_length_and_value(instance.nr_jobs, 0);
 
     let mut previous_enzyme_per_machine: HashMap<i32, String> = HashMap::new();
 
     let mut results: Vec<DecodedOperation> = Vec::new();
 
-    let mut op_index = create_vec_with_length_and_value(schedule.instance.nr_jobs, 0);
+    let mut op_index = create_vec_with_length_and_value(instance.nr_jobs, 0);
 
     for job in schedule.v2.clone().into_iter() {
-        let operation: i32 = schedule.instance.operations[&job][op_index[job as usize] as usize];
-        let machine = schedule.v1[(&schedule.instance.initial_operation_index_in_job_vector_per_job[job as usize] + &op_index[job as usize]) as usize];
+        let operation: i32 = instance.operations[&job][op_index[job as usize] as usize];
+        let machine = schedule.v1[(&instance.initial_operation_index_in_job_vector_per_job[job as usize] + &op_index[job as usize]) as usize];
         op_index[job as usize] += 1;
 
-        let duration = schedule.instance.processing_times[&(job, operation, machine)].clone();
+        let duration = instance.processing_times[&(job, operation, machine)].clone();
 
         let mut change_over_time = 0;
 
-        let curr_enzyme = schedule.instance.orders[&job].product.clone();
+        let curr_enzyme = instance.orders[&job].product.clone();
 
         if previous_enzyme_per_machine.contains_key(&machine) {
-            change_over_time = schedule.instance.instance_constants.change_overs[&(machine, previous_enzyme_per_machine[&machine].clone(), curr_enzyme.clone())];
+            change_over_time = instance.instance_constants.change_overs[&(machine, previous_enzyme_per_machine[&machine].clone(), curr_enzyme.clone())];
         }
 
         curr_machine_times[machine as usize] += change_over_time;

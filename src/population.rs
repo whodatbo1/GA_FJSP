@@ -1,13 +1,13 @@
 use crate::instance::Instance;
 use crate::schedule::{generate_random_schedule_encoding, Schedule};
 
-pub struct Population<'a> {
-    pub members: Vec<Schedule<'a>>
+pub struct Population {
+    pub members: Vec<Schedule>
 }
 
-impl Population<'_> {
-    pub fn generate_starting_population<'a>(instance: &'a Instance, size: i32) -> Population<'a>{
-        let mut schedules: Vec<Schedule<'a>> = Vec::with_capacity(size as usize);
+impl Population {
+    pub fn generate_starting_population(instance: &Instance, size: i32) -> Population{
+        let mut schedules: Vec<Schedule> = Vec::with_capacity(size as usize);
         for _ in 0..size {
             schedules.push(Schedule::generate_random_schedule(instance));
         }
@@ -20,15 +20,18 @@ impl Population<'_> {
         }
     }
 
-    pub fn calculate_objective_values_and_sort(&mut self) {
+    pub fn get_members(&self) -> &Vec<Schedule> {
+        &self.members
+    }
+
+    pub fn calculate_objective_values_and_sort(&mut self, instance: &Instance) {
         for schedule in self.members.iter_mut() {
-           schedule.calculate_makespan();
+           schedule.calculate_makespan(&instance);
         }
         self.members.sort_by(|a, b| a.order_by_makespan(b));
     }
 
-    pub fn get_average_makespan(&mut self) -> f64{
-        self.calculate_objective_values_and_sort();
+    pub fn get_average_makespan(&self) -> f64{
         let mut average: f64 = 0.0;
         for schedule in self.members.iter() {
             average += schedule.objective_values["makespan"] as f64;
