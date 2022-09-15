@@ -1,3 +1,4 @@
+use crate::genetic_operations::mutate_schedule;
 use crate::instance::Instance;
 use crate::schedule::{generate_random_schedule_encoding, Schedule};
 
@@ -39,7 +40,7 @@ impl Population {
         average / self.members.len() as f64
     }
 
-    pub fn generate_probability_distribution(&self) -> Vec<f64>{
+    pub fn generate_probability_distribution(&self) -> Vec<f64> {
         let min_makespan = self.members[0].objective_values["makespan"];
         let max_makespan = self.members[self.members.len() - 1].objective_values["makespan"];
 
@@ -57,5 +58,11 @@ impl Population {
             probability[i] = probability[i] / probability_sum;
         }
         probability
+    }
+
+    pub fn mutate_schedules(&mut self, instance: &Instance, mutation_coefficient: f64) {
+        for schedule in self.members.iter_mut() {
+            mutate_schedule(instance, schedule, mutation_coefficient);
+        }
     }
 }

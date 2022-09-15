@@ -67,29 +67,16 @@ pub fn generate_all_instances(instance_constants: &InstanceConstants,
             job_id += 1;
         }
 
-        let mut job_vector: Vec<i32> = Vec::new();
-        let mut initial_operation_index_in_job_vector_per_job = Vec::new();
-        let mut index: i32 = 0;
-        for job in 0..operations.len() {
-            initial_operation_index_in_job_vector_per_job.push(index);
-            for _ in &operations[&(job as i32)] {
-                job_vector.push(job as i32);
-                index += 1;
-            }
-        }
-
-        let curr_instance = Instance {
-            instance_constants: instance_constants.clone(),
+        let curr_instance = Instance::new(
+            instance_constants.clone(),
             instance_num,
-            nr_jobs: jobs.len() as i32,
+            jobs.len() as i32,
             orders,
             jobs,
             operations,
             machine_alternatives,
             processing_times,
-            job_vector,
-            initial_operation_index_in_job_vector_per_job
-        };
+        );
         instances.insert(instance_num, curr_instance);
     }
 

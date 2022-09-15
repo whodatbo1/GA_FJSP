@@ -56,7 +56,6 @@ pub fn generate_random_schedule_encoding(instance: &Instance) -> (Vec<i32>, Vec<
     let mut rng = rand::thread_rng();
 
     for job in 0..instance.nr_jobs {
-
         for i in 0..(instance.operations[&job].len() as i32) {
             let rand_num: i32 = *instance.machine_alternatives.get(&(job, i)).expect("").choose(&mut rng).expect("");
             v1.push(rand_num);

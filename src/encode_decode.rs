@@ -115,7 +115,8 @@ pub fn decode_simple(schedule: &Schedule, instance: &Instance) -> DecodedSchedul
         let curr_enzyme = instance.orders[&job].product.clone();
 
         if previous_enzyme_per_machine.contains_key(&machine) {
-            change_over_time = instance.instance_constants.change_overs[&(machine, previous_enzyme_per_machine[&machine].clone(), curr_enzyme.clone())];
+            let prev_enzyme = previous_enzyme_per_machine[&machine].clone();
+            change_over_time = instance.instance_constants.change_overs[&(machine, prev_enzyme, curr_enzyme.clone())];
         }
 
         curr_machine_times[machine as usize] += change_over_time;

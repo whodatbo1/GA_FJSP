@@ -5,6 +5,7 @@ use crate::generate_instances::load_change_overs;
 use crate::genetic_operations::cross_over_schedules;
 use crate::instance::{Instance, InstanceConstants};
 use crate::population::Population;
+use crate::python_instance_decoder::decode_python_instance;
 use crate::schedule::Schedule;
 
 pub mod instance;
@@ -14,6 +15,7 @@ mod encode_decode;
 mod schedule;
 mod population;
 mod genetic_operations;
+mod python_instance_decoder;
 
 fn main() {
     let nr_instances = 20;
@@ -55,9 +57,14 @@ fn main() {
 
     let instance_constants: InstanceConstants = InstanceConstants::new(NR_MACHINES, products, unit_machines, processing_times, recipes, change_overs);
 
-    let instances = generate_instances::generate_all_instances(&instance_constants, nr_instances);
+    let python_instance_num = 50;
+    let python_instance = decode_python_instance("FJSP_0.py", instance_constants.clone(), python_instance_num);
 
-    run_ga(0, &instances, 100, 100, 0.1);
+    let mut instances = generate_instances::generate_all_instances(&instance_constants, nr_instances);
+
+    instances.insert(python_instance_num, python_instance);
+
+    run_ga(python_instance_num, &instances, 100, 100, 0.1);
     println!("Done");
 }
 
@@ -65,7 +72,7 @@ fn run_ga(instance_num: i32, instances: &HashMap<i32, Instance>, population_size
     let instance = instances.get(&instance_num).expect("Instance num not found");
 
     println!("Beginning pipeline...");
-    
+
     println!("Generating starting population...");
     let mut population = Population::generate_starting_population(instance, population_size);
 
@@ -84,11 +91,11 @@ fn run_ga(instance_num: i32, instances: &HashMap<i32, Instance>, population_size
             let parent_male = &population.members[parent_male_index as usize];
             let parent_female = &population.members[parent_female_index as usize];
 
-            let child = genetic_operations::cross_over_schedules(&instance, parent_male, parent_female);
+            let child = cross_over_schedules(&instance, parent_male, parent_female);
 
             population.members.push(child);
         }
-
+        population.mutate_schedules(&instance, mutation_coeffictient);
         population.calculate_objective_values_and_sort(&instance);
         population.members.truncate(population_size as usize);
 

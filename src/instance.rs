@@ -45,3 +45,54 @@ pub struct Instance {
     pub job_vector: Vec<i32>,
     pub initial_operation_index_in_job_vector_per_job: Vec<i32>
 }
+
+impl Instance {
+
+    pub fn new(instance_constants: InstanceConstants,
+               instance_num: i32,
+               nr_jobs: i32,
+               orders: HashMap<i32, Order>,
+               jobs: Vec<i32>,
+               operations: HashMap<i32, Vec<i32>>,
+               machine_alternatives: HashMap<(i32, i32), Vec<i32>>,
+               processing_times: HashMap<(i32, i32, i32), i32>) -> Instance {
+        let job_vector = Instance::generate_job_vector(&operations);
+        let initial_operation_index_in_job_vector_per_job = Instance::generate_initial_operation_index_in_job_vector_per_job(&operations);
+        Instance {
+            instance_constants,
+            instance_num,
+            nr_jobs,
+            orders,
+            jobs,
+            operations,
+            machine_alternatives,
+            processing_times,
+            job_vector,
+            initial_operation_index_in_job_vector_per_job
+        }
+    }
+
+    pub fn generate_job_vector(operations: &HashMap<i32, Vec<i32>>) -> Vec<i32> {
+        let mut job_vector: Vec<i32> = Vec::new();
+        let mut index: i32 = 0;
+        for job in 0..operations.len() {
+            for _ in &operations[&(job as i32)] {
+                job_vector.push(job as i32);
+                index += 1;
+            }
+        }
+        job_vector
+    }
+
+    pub fn generate_initial_operation_index_in_job_vector_per_job(operations: &HashMap<i32, Vec<i32>>) -> Vec<i32> {
+        let mut initial_operation_index_in_job_vector_per_job = Vec::new();
+        let mut index: i32 = 0;
+        for job in 0..operations.len() {
+            initial_operation_index_in_job_vector_per_job.push(index);
+            for _ in &operations[&(job as i32)] {
+                index += 1;
+            }
+        }
+        initial_operation_index_in_job_vector_per_job
+    }
+}
