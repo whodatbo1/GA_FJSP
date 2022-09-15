@@ -57,16 +57,6 @@ fn main() {
 
     let instances = generate_instances::generate_all_instances(&instance_constants, nr_instances);
 
-    // for _ in 0..100000 {
-    //     let (v10, v20) = schedule::generate_random_schedule_encoding(&instances.get(&0).expect(""));
-    //     let (v11, v21) = schedule::generate_random_schedule_encoding(&instances.get(&0).expect(""));
-    //
-    //     let s: Schedule = Schedule::new(0, v10, v20);
-    //     let s1: Schedule = Schedule::new(0, v11, v21);
-    //     // let decoded_schedule = decode_simple(&s);
-    //     let x = cross_over_schedules(&s, &s1);
-    //     // println!("{}", s.calculate_makespan());
-    // }
     run_ga(0, &instances, 100, 100, 0.1);
     println!("Done");
 }
@@ -75,9 +65,7 @@ fn run_ga(instance_num: i32, instances: &HashMap<i32, Instance>, population_size
     let instance = instances.get(&instance_num).expect("Instance num not found");
 
     println!("Beginning pipeline...");
-
-    let mut rng = rand::thread_rng();
-
+    
     println!("Generating starting population...");
     let mut population = Population::generate_starting_population(instance, population_size);
 
@@ -97,6 +85,7 @@ fn run_ga(instance_num: i32, instances: &HashMap<i32, Instance>, population_size
             let parent_female = &population.members[parent_female_index as usize];
 
             let child = genetic_operations::cross_over_schedules(&instance, parent_male, parent_female);
+
             population.members.push(child);
         }
 

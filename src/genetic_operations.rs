@@ -45,10 +45,15 @@ pub fn cross_over_schedules(instance: &Instance, male_schedule: &Schedule, femal
 
         if binary_job_vector_for_male[male_schedule.v2[i] as usize] {
             child_v2[i] = male_schedule.v2[i].clone();
-        } else {
+        }
+    }
+
+    for i in 0..female_schedule.v1.len() {
+        if !binary_job_vector_for_male[female_schedule.v2[i] as usize] {
             jobs_to_add_from_female.push(female_schedule.v2[i].clone());
         }
     }
+
     let mut index: i32 = 0;
     for i in 0..child_v2.len() {
         if child_v2[i] == -1 {

@@ -38,11 +38,16 @@ impl Schedule {
         let other_makespan = other.objective_values.get("makespan").expect("Makespan of Schedule other missing.");
 
         if self_makespan < other_makespan {
-            return Greater;
-        } else if self_makespan > other_makespan {
             return Less;
+        } else if self_makespan > other_makespan {
+            return Greater;
         }
         return Equal;
+    }
+
+    pub fn is_valid(&self, instance: &Instance) -> bool {
+        // instance.instance_constants.
+        true
     }
 }
 
