@@ -1,33 +1,46 @@
-use rand::Rng;
-use rand::seq::SliceRandom;
 use crate::encode_decode::create_vec_with_length_and_value;
 use crate::{Instance, Schedule};
+use rand::seq::SliceRandom;
+use rand::Rng;
 
 pub fn mutate_schedule(instance: &Instance, schedule: &mut Schedule, mutation_coefficient: f64) {
     let mut rng = rand::thread_rng();
 
-    let mut op_index = create_vec_with_length_and_value(instance.nr_jobs, 0);
+    // let mut op_index = create_vec_with_length_and_value(instance.nr_jobs, 0);
 
-    for i in 0..instance.job_vector.len() {
-
-        let job = instance.job_vector[i];
-        let operation = instance.operations[&job][op_index[job as usize] as usize];
-        op_index[job as usize] += 1;
-
-        if rng.gen_bool(mutation_coefficient) {
-            let new_machine = instance.machine_alternatives[&(job, operation)].choose(&mut rng).expect("Couldn't generate random.");
-            schedule.v1[i] =  *new_machine;
-        }
-
-        if rng.gen_bool(mutation_coefficient) {
-            //TODO
-            //Second mutation type
-        }
+    if rng.gen_bool(mutation_coefficient) {
+        let job = rng.gen_range(0..instance.nr_jobs);
+        let operation = rng.gen_range(0..instance.operations[&job].len()) as i32;
+        let index = instance.job_operation_index_map[&(job, operation)];
+        let new_machine_index =
+            rng.gen_range(0..instance.machine_alternatives[&(job, operation)].len());
+        let new_machine = instance.machine_alternatives[&(job, operation)][new_machine_index];
+        schedule.v1[index as usize] = new_machine;
     }
+    // for i in 0..instance.job_vector.len() {
+    //     let job = instance.job_vector[i];
+    //     let operation = instance.operations[&job][op_index[job as usize] as usize];
+    //     op_index[job as usize] += 1;
+    //
+    //     if rng.gen_bool(mutation_coefficient) {
+    //         let new_machine = instance.machine_alternatives[&(job, operation)]
+    //             .choose(&mut rng)
+    //             .expect("Couldn't generate random.");
+    //         schedule.v1[i] = *new_machine;
+    //     }
+    //
+    //     if rng.gen_bool(mutation_coefficient) {
+    //         //TODO
+    //         //Second mutation type
+    //     }
+    // }
 }
 
-pub fn cross_over_schedules(instance: &Instance, male_schedule: &Schedule, female_schedule: &Schedule) -> Schedule {
-
+pub fn cross_over_schedules(
+    instance: &Instance,
+    male_schedule: &Schedule,
+    female_schedule: &Schedule,
+) -> Schedule {
     let binary_job_vector_for_male = generate_bool_vector(instance.nr_jobs);
     let binary_machine_vector_for_male = generate_bool_vector(male_schedule.v1.len() as i32);
 
@@ -63,10 +76,9 @@ pub fn cross_over_schedules(instance: &Instance, male_schedule: &Schedule, femal
     }
 
     Schedule::new(male_schedule.instance_num, child_v1, child_v2)
-
 }
 
-fn generate_bool_vector(length: i32) -> Vec<bool>{
+fn generate_bool_vector(length: i32) -> Vec<bool> {
     let mut rng = rand::thread_rng();
     let mut return_vec = Vec::with_capacity(length as usize);
 

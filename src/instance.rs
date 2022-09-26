@@ -7,30 +7,32 @@ pub struct InstanceConstants {
     pub unit_machines: HashMap<i32, Vec<i32>>,
     pub processing_times: [Vec<i32>; 3],
     pub recipes: [Vec<i32>; 6],
-    pub change_overs: HashMap<(i32, String, String), i32>
+    pub change_overs: HashMap<(i32, String, String), i32>,
 }
 
 impl InstanceConstants {
-    pub fn new(nr_machines: i32,
-               products: Vec<String>,
-               unit_machines: HashMap<i32, Vec<i32>>,
-               processing_times: [Vec<i32>; 3],
-               recipes: [Vec<i32>; 6],
-               change_overs: HashMap<(i32, String, String), i32>) -> InstanceConstants{
+    pub fn new(
+        nr_machines: i32,
+        products: Vec<String>,
+        unit_machines: HashMap<i32, Vec<i32>>,
+        processing_times: [Vec<i32>; 3],
+        recipes: [Vec<i32>; 6],
+        change_overs: HashMap<(i32, String, String), i32>,
+    ) -> InstanceConstants {
         InstanceConstants {
             nr_machines,
             products,
             unit_machines,
             processing_times,
             recipes,
-            change_overs
+            change_overs,
         }
     }
 }
 
 pub struct Order {
     pub product: String,
-    pub due: i32
+    pub due: i32,
 }
 
 pub struct Instance {
@@ -43,21 +45,26 @@ pub struct Instance {
     pub machine_alternatives: HashMap<(i32, i32), Vec<i32>>,
     pub processing_times: HashMap<(i32, i32, i32), i32>,
     pub job_vector: Vec<i32>,
-    pub initial_operation_index_in_job_vector_per_job: Vec<i32>
+    pub initial_operation_index_in_job_vector_per_job: Vec<i32>,
+    pub job_operation_index_map: HashMap<(i32, i32), i32>,
 }
 
 impl Instance {
-
-    pub fn new(instance_constants: InstanceConstants,
-               instance_num: i32,
-               nr_jobs: i32,
-               orders: HashMap<i32, Order>,
-               jobs: Vec<i32>,
-               operations: HashMap<i32, Vec<i32>>,
-               machine_alternatives: HashMap<(i32, i32), Vec<i32>>,
-               processing_times: HashMap<(i32, i32, i32), i32>) -> Instance {
+    pub fn new(
+        instance_constants: InstanceConstants,
+        instance_num: i32,
+        nr_jobs: i32,
+        orders: HashMap<i32, Order>,
+        jobs: Vec<i32>,
+        operations: HashMap<i32, Vec<i32>>,
+        machine_alternatives: HashMap<(i32, i32), Vec<i32>>,
+        processing_times: HashMap<(i32, i32, i32), i32>,
+    ) -> Instance {
         let job_vector = Instance::generate_job_vector(&operations);
-        let initial_operation_index_in_job_vector_per_job = Instance::generate_initial_operation_index_in_job_vector_per_job(&operations);
+        let initial_operation_index_in_job_vector_per_job =
+            Instance::generate_initial_operation_index_in_job_vector_per_job(&operations);
+        let job_operation_index_map =
+            Instance::generate_job_operation_index_map(nr_jobs, &operations);
         Instance {
             instance_constants,
             instance_num,
@@ -68,7 +75,8 @@ impl Instance {
             machine_alternatives,
             processing_times,
             job_vector,
-            initial_operation_index_in_job_vector_per_job
+            initial_operation_index_in_job_vector_per_job,
+            job_operation_index_map,
         }
     }
 
@@ -84,7 +92,9 @@ impl Instance {
         job_vector
     }
 
-    pub fn generate_initial_operation_index_in_job_vector_per_job(operations: &HashMap<i32, Vec<i32>>) -> Vec<i32> {
+    pub fn generate_initial_operation_index_in_job_vector_per_job(
+        operations: &HashMap<i32, Vec<i32>>,
+    ) -> Vec<i32> {
         let mut initial_operation_index_in_job_vector_per_job = Vec::new();
         let mut index: i32 = 0;
         for job in 0..operations.len() {
@@ -94,5 +104,20 @@ impl Instance {
             }
         }
         initial_operation_index_in_job_vector_per_job
+    }
+
+    pub fn generate_job_operation_index_map(
+        nr_jobs: i32,
+        operations: &HashMap<i32, Vec<i32>>,
+    ) -> HashMap<(i32, i32), i32> {
+        let mut job_operation_index_map = HashMap::new();
+        let mut index = 0;
+        for job in 0..nr_jobs {
+            for op in operations[&job].iter() {
+                job_operation_index_map.insert((job, *op), index);
+                index += 1;
+            }
+        }
+        job_operation_index_map
     }
 }

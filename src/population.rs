@@ -1,13 +1,16 @@
 use crate::genetic_operations::mutate_schedule;
 use crate::instance::Instance;
 use crate::schedule::{generate_random_schedule_encoding, Schedule};
+use rayon::iter::IntoParallelRefMutIterator;
+use rayon::iter::ParallelIterator;
+use std::time::Instant;
 
 pub struct Population {
-    pub members: Vec<Schedule>
+    pub members: Vec<Schedule>,
 }
 
 impl Population {
-    pub fn generate_starting_population(instance: &Instance, size: i32) -> Population{
+    pub fn generate_starting_population(instance: &Instance, size: i32) -> Population {
         let mut schedules: Vec<Schedule> = Vec::with_capacity(size as usize);
         for _ in 0..size {
             schedules.push(Schedule::generate_random_schedule(instance));
@@ -16,23 +19,42 @@ impl Population {
     }
 
     pub fn new(schedules: Vec<Schedule>) -> Population {
-        Population {
-            members: schedules
-        }
+        Population { members: schedules }
     }
 
     pub fn get_members(&self) -> &Vec<Schedule> {
         &self.members
     }
 
-    pub fn calculate_objective_values_and_sort(&mut self, instance: &Instance) {
+    pub fn calculate_objective_values_and_sort_fast(&mut self, instance: &Instance) {
+        let start_decode = Instant::now();
         for schedule in self.members.iter_mut() {
-           schedule.calculate_makespan(&instance);
+            // println!("Schedule:\n v1: {}")
+            schedule.calculate_makespan_fast(&instance);
         }
+        println!(
+            "All decode time: {:?} for {} members",
+            start_decode.elapsed(),
+            self.members.len() as i32
+        );
         self.members.sort_by(|a, b| a.order_by_makespan(b));
     }
 
-    pub fn get_average_makespan(&self) -> f64{
+    pub fn calculate_objective_values_and_sort_optimal(&mut self, instance: &Instance) {
+        let start_decode = Instant::now();
+        for schedule in self.members.iter_mut() {
+            // println!("Schedule:\n v1: {}")
+            schedule.calculate_makespan_optimal(&instance);
+        }
+        println!(
+            "All decode time: {:?} for {} members",
+            start_decode.elapsed(),
+            self.members.len() as i32
+        );
+        self.members.sort_by(|a, b| a.order_by_makespan(b));
+    }
+
+    pub fn get_average_makespan(&self) -> f64 {
         let mut average: f64 = 0.0;
         for schedule in self.members.iter() {
             average += schedule.objective_values["makespan"] as f64;
@@ -61,8 +83,8 @@ impl Population {
     }
 
     pub fn mutate_schedules(&mut self, instance: &Instance, mutation_coefficient: f64) {
-        for schedule in self.members.iter_mut() {
-            mutate_schedule(instance, schedule, mutation_coefficient);
-        }
+        self.members
+            .par_iter_mut()
+            .for_each(|schedule| mutate_schedule(instance, schedule, mutation_coefficient));
     }
 }
